@@ -68,7 +68,7 @@ namespace mep
 		std::vector<double> get_profile() const
 		{
 			return profile;
-			//подсчет профаила
+
 		}
 		double get_rmse(const path& a, const path& b) const
 		{
@@ -96,7 +96,7 @@ namespace mep
 		{
 			this->initial_path = a;
 		}
-    
+
 		vect get_rmse_evolution()
 		{
 			return rmse_evolution;
@@ -134,19 +134,19 @@ namespace mep
 			vm[n] -= h;
 			return	(score(vp) - score(vm)) / (2*h);
 		}
-		vect findLocalMinimum(vect x  , double alpha=0.000001, int maxIterations= 100000)
+		vect findLocalMinimum(vect x, double alpha=0.000001, int maxIterations= 100000)
 		{
 			vect grad_xyz(x.size());
 			for(int i = 0; i < maxIterations; ++i)
 			{
-        
-        for(int j=0;j<x.size();j++)
-        {
-          grad_xyz[j]=get_gradient(x,j);
-          x[j]-=alpha*grad_xyz[j];
-          }
+
+				for(int j=0; j<x.size(); j++)
+				{
+					grad_xyz[j]=get_gradient(x,j);
+					x[j]-=alpha*grad_xyz[j];
+				}
 			}
-      return x;
+			return x;
 		}
 		double scalar_product(const std::vector<double>& vector1, const std::vector<double>& vector2)
 		{
@@ -173,7 +173,7 @@ namespace mep
 		{
 			for(size_t i = 1; i != images.size() - 1; i++)
 			{
-        
+
 				std::vector<double> values(images[i].size());
 				double sum = 0.0;
 				for(size_t j = 0; j < images[i].size(); j++)
@@ -250,42 +250,29 @@ namespace mep
 		}
 		void compute_mep()
 		{
-			/*if (initialial_path.empty())
-			{initialial_path = path(point_number + 2, std::vector<double>(2));
-			initialize_line(initialial_path, head, tail);}*/
+			path images(point_number+2, std::vector<double>(head.size()));
 
+			for(size_t i=0; i<head.size(); i++)
+			{
+				images[0][i]=head[i];
+				images[images.size()-1][i] = tail[i];
+			}
 
-			path images(point_number+2 , std::vector<double>(head.size()));
-      
-      
-			/*images[0][0] = head[0];
-			images[0][1] = head[1];
-			images[images.size()-1][0] = tail[0];
-			images[images.size()-1][1] = tail[1];*/
-      for(size_t i=0;i<head.size();i++)
-      {
-        images[0][i]=head[i];
-        images[images.size()-1][i] = tail[i];
-        }
-
-			std::vector<std::vector<double>> tangents(point_number+2 , std::vector<double>(head.size()));
-			std::vector<std::vector<double>> springs(point_number+2 , std::vector<double>(head.size()));
-			std::vector<std::vector<double>> gradients(point_number+2 , std::vector<double>(head.size()));
+			std::vector<std::vector<double>> tangents(point_number+2, std::vector<double>(head.size()));
+			std::vector<std::vector<double>> springs(point_number+2, std::vector<double>(head.size()));
+			std::vector<std::vector<double>> gradients(point_number+2, std::vector<double>(head.size()));
 
 			std::vector<double> force(point_number*head.size(), 0);
 			std::vector<double> old_force(point_number*head.size(), 0);
 			std::vector<double> velocity(point_number*head.size(), 0);
-
-			//initialize_line(images, head, tail);
-
 			if(initial_path.empty())
-      {
+			{
 				initialize_line(images, head, tail);
-        initial_path = images;
-      }
+				initial_path = images;
+			}
 			else
 				images = initial_path;
-      mep_evolution.push_back(images);
+			mep_evolution.push_back(images);
 
 			for(size_t g = 0; g < niter; g++)
 			{
@@ -293,8 +280,8 @@ namespace mep
 				get_parallel(springs, images, tangents, k);
 				get_gradients(gradients, images);
 				get_prepared(gradients, tangents);
-        
-        
+
+
 				for(size_t i = 1, l = 0; i < springs.size() - 1; i++)
 				{
 					for(size_t j = 0; j < springs[i].size(); j++, l++)
@@ -302,7 +289,7 @@ namespace mep
 						force[l] = springs[i][j] - gradients[i][j];
 					}
 				}
-        
+
 				auto vf = scalar_product(velocity, force);
 				if(vf > 0.0)
 				{
@@ -330,24 +317,22 @@ namespace mep
 						images[i][j] += velocity[head.size()*(i-1) + j]*step;
 					}
 				}
-        //find
-        
-        if(this->flex == 0)
-        {
-          images[0] = findLocalMinimum(images[0],h,200);
-          images[images.size()-1]=findLocalMinimum(images[images.size()-1],h,200);
-        }
-        else if(this->flex == 2)
-        {
-          images[images.size()-1]=findLocalMinimum(images[images.size()-1],h,200);
-          
-        }
-        else if(this->flex == 3)
-        {
-          images[0] = findLocalMinimum(images[0],h,200);
-        }
-        
-        
+				if(this->flex == 0)
+				{
+					images[0] = findLocalMinimum(images[0],h,200);
+					images[images.size()-1]=findLocalMinimum(images[images.size()-1],h,200);
+				}
+				else if(this->flex == 2)
+				{
+					images[images.size()-1]=findLocalMinimum(images[images.size()-1],h,200);
+
+				}
+				else if(this->flex == 3)
+				{
+					images[0] = findLocalMinimum(images[0],h,200);
+				}
+
+
 				for(size_t i = 0; i < old_force.size(); i++)
 				{
 					old_force[i] = force[i];
@@ -357,10 +342,10 @@ namespace mep
 				{
 					rmse_evolution.push_back(this->get_rmse(optimal_path,images));
 				}
-        else
-        {
-          rmse_evolution.push_back(this->get_rmse(mep_evolution[g],images));
-          }
+				else
+				{
+					rmse_evolution.push_back(this->get_rmse(mep_evolution[g],images));
+				}
 			}
 			this->MEP= images;
 		}
@@ -499,10 +484,6 @@ namespace mep
 			return interpolated_values;
 		}
 
-
-
-		// Функция для расчета нормы вектора
-
 		double norm(const std::vector<double>& v)
 		{
 			double sum = 0.0;
@@ -525,17 +506,13 @@ namespace mep
 
 		std::vector<std::vector<double>> step_euler(std::vector<std::vector<double>>& string, double step)
 		{
-			//std::vector<double> string_grad_x(string.size());
-			//std::vector<double> string_grad_y(string.size());
-			path string_grad(string.size(),vect(string[0].size()));
-			// Вычисление градиентов в точках string
 
+			path string_grad(string.size(),vect(string[0].size()));
 			for(size_t i = 0; i < string.size(); i++)
 			{
 				for(size_t j=0; j< string[0].size(); j++)
 					string_grad[i][j]=get_gradient(string[i],j);
-				//string_grad_x[i] = get_gradient(string[i],0);
-				//string_grad_y[i] = get_gradient(string[i],1);
+
 			}
 			double h = 0.0;
 			for(size_t i = 0; i < string_grad.size(); i++)
@@ -558,23 +535,7 @@ namespace mep
 			{
 				for(size_t j=0; j<string[0].size(); j++)
 					string[i][j]-=step * string_grad[i][j] / h;
-				//string[i][0] -= step * string_grad_x[i] / h;
-				//string[i][1] -= step * string_grad_y[i] / h;
 			}
-
-
-			/*if (this->flex) {
-			    for (size_t i = 0; i < string.size(); i++) {
-			        string[i][0] -= step * string_grad_x[i] / h;
-			        string[i][1] -= step * string_grad_y[i] / h;
-			    }
-			} else {
-			    for (size_t i = 1; i < string.size() - 1; i++) {
-			        string[i][0] -= step * string_grad_x[i] / h;
-			        string[i][1] -= step * string_grad_y[i] / h;
-			    }
-			}*/
-
 			return string;
 		}
 
@@ -589,22 +550,15 @@ namespace mep
 			return result;
 		}
 
-
-
-
 		void compute_mep()
 		{
 
 			path string_xyz(point_number,std::vector<double>(head.size()));
 			initialize_line(string_xyz,head,tail);
-			  
-
-
 			std::vector<std::vector<double>> string;
-
 			if(initial_path.empty()) { string=string_xyz; initial_path=string_xyz;}
 			else   string = initial_path;
-      mep_evolution.push_back(string);
+			mep_evolution.push_back(string);
 
 			std::vector<std::vector<double>> old_string(string.size(), std::vector<double>(string[0].size(), 0.0));
 
@@ -629,8 +583,6 @@ namespace mep
 					double norm_diff = norm(diff);
 					arclength.push_back(arclength.back() + norm_diff);
 				}
-
-				// Нормируем arclength
 				double arclength_last = arclength.back();
 				for(double &value : arclength)
 				{
@@ -708,100 +660,14 @@ void print2file2d(std::string fname, const std::vector<std::vector<double>> &u, 
 	if(file.is_open())
 	{
 		for(size_t i = 0; i < u.size(); i+=step)
-    {
-      for(size_t j=0;j<u[i].size();j++)
-			  file <<std::scientific<< u[i][j]<<'\t';
-      file<<std::endl;
-    }
+		{
+			for(size_t j=0; j<u[i].size(); j++)
+				file <<std::scientific<< u[i][j]<<'\t';
+			file<<std::endl;
+		}
 		//std::cout<<"Вывод в фаил закончен"<<std::endl;
 		file.close();
 	}
 }
 
-/*
-double MullerBrowns(const std::vector<double> x)
-{
-	double A[4] = {-200, -100, -170, 15};
-	double a[4] = {-1, -1, -6.5, 0.7};
-	double b[4] = {0, 0, 11, 0.6};
-	double c[4] = {-10, -10, -6.5, 0.7};
-	double x0[4] = {1, 0, -0.5, -1};
-	double y0[4] = {0, 0.5, 1.5, 1};
-	double res = 0;
-	for(int i = 0; i < 4; i++)
-	{
-		res += A[i] * std::exp(a[i] * (x[0] - x0[i]) * (x[0] - x0[i]) + b[i] * ((x[0] - x0[i]) * (x[1] - y0[i])) + c[i] * (x[1] - y0[i]) * (x[1] - y0[i]));
-	}
-	return res;
-}
-double DWcircle(const std::vector<double> arr)
-{
-	double x=arr[0];
-	double y = arr[1];
-	return (1-x*x-y*y)*(1-x*x-y*y) + y*y /(x*x+y*y);
-}
-double DWsimple(const std::vector<double> arr)
-{
-	double x=arr[0];
-	double y = arr[1];
-	return (x*x-1)*(x*x-1) + y*y;
-}*/
 
-
-/*
-int main()
-{
-	std::function<double(const std::vector<double>&)> func = MullerBrowns;
-
-	
-std::vector<std::vector<double>> op={
-    {-1.000000e+00, 8.979318e-11},
-    {-9.396926e-01, 3.420201e-01},
-    {-7.660444e-01, 6.427876e-01},
-    {-5.000000e-01, 8.660254e-01},
-    {-1.736482e-01, 9.848078e-01},
-    {1.736482e-01,  9.848078e-01},
-    {5.000000e-01,  8.660254e-01},
-    {7.660444e-01,  6.427876e-01},
-    {9.396926e-01,  3.420201e-01},
-    {1.000000e+00,  0.000000e+00}
-    };
-
-	//std::vector<double> head = {-5.58223644e-01, 1.44172583e+00};  
-	//std::vector<double> tail = {6.23499405e-01, 2.80377586e-02};
-
-	std::vector<double> head = {-0.5, 0.5}; 
-  std::vector<double> tail = {0.5 , 0.5};
-  mep::NEB obj;
-	  obj.set_parameters(head,tail);
-	  obj.set_flexibility(0);
-	  obj.set_function(DWsimple);
-	  //obj.set_optimal_path(op);
-    obj.compute_mep();
-	std::vector<std::vector<double>> pa = obj.get_mep();
-  print2file2d("NEB_10.dat",pa);
-
-
-  set_parameters(const vect& _head,
-							const vect& _tail,
-							size_t pn = 10,
-							double step = 0.01,
-							size_t niter = 2500,
-							double h = 1.0e-6,
-							double k = 1.0)
-	for(int i=0;i<50;i++)
-	{
-	  mep::STRING obj;
-	  obj.set_parameters(head,tail);
-	  obj.set_flexibility(0);
-	  obj.set_function(DWsimple);
-	  obj.set_optimal_path(op);
-	  auto time_one = std::chrono::steady_clock::now();
-	  std::vector<std::vector<double>> pa = obj.compute_mep();
-    //auto time_two = std::chrono::steady_clock::now();
-    //auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(time_two - time_one).count();
-    print2file2d("timeCS.dat",pa);
-    std::cout << elapsed_time<<", " ;
-
-	  }
-}*/
