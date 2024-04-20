@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmep.a CMakeFiles/mep.dir/mepClass.cpp.o
+/usr/bin/ranlib libmep.a
