@@ -28,7 +28,7 @@ int main()
     };
 	std::vector<double> head = {-0.5, 0.5}; 
   std::vector<double> tail = {0.5 , 0.5};
-  mep::STRING StringMethod;
+  mep::STRING<double> StringMethod;
 	StringMethod.set_parameters(head,tail);
 	StringMethod.set_flexibility(0);
 	StringMethod.set_function(DWcircle);
@@ -37,7 +37,7 @@ int main()
 	std::vector<std::vector<double>> path_str = StringMethod.get_mep();
   print2file2d("string_circle_10.dat",path_str);
   
-  mep::NEB NebMethod;
+  mep::NEB<double> NebMethod;
 	NebMethod.set_parameters(head,tail);
 	NebMethod.set_flexibility(0);
 	NebMethod.set_function(DWcircle);

@@ -1,6 +1,0 @@
-/home/goga/Рабочий стол/methods/build/CMakeFiles/example.dir
-/home/goga/Рабочий стол/methods/build/CMakeFiles/edit_cache.dir
-/home/goga/Рабочий стол/methods/build/CMakeFiles/rebuild_cache.dir
-/home/goga/Рабочий стол/methods/build/mep/CMakeFiles/mep.dir
-/home/goga/Рабочий стол/methods/build/mep/CMakeFiles/edit_cache.dir
-/home/goga/Рабочий стол/methods/build/mep/CMakeFiles/rebuild_cache.dir
