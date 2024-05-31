@@ -2,7 +2,6 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
-
 void printString(const std::vector<std::vector<double>>& string);
 
 namespace mep
@@ -47,10 +46,7 @@ namespace mep
 			this->h=h;
 			this->k=k;
 		}
-		void set_step(U dt=1.0e-3)
-		{
-			this->step=dt;
-		}
+		
 
 		void set_function(std::function<U(const vect&)> fn)
 		{
@@ -75,13 +71,6 @@ namespace mep
 		}
 		U get_rmse(const path& a, const path& b) const
 		{
-			if(a.size() != b.size())
-			{
-				std::cout<<"Вектора для подсчета RMSE разных размеров"<<std::endl;
-				return -1;
-			}
-			else
-			{
 				U sum = 0.0;
 				for(size_t i = 0; i < a.size(); i++)
 				{
@@ -93,7 +82,6 @@ namespace mep
 				}
 				U mse = sum / (a.size()*a.front().size());
 				return std::sqrt(mse);
-			}
 		}
 		void set_initial_path(const path& a)
 		{
@@ -113,30 +101,7 @@ namespace mep
 			return this->initial_path;
 		}
 
-		/*void numericalGradient(U x, U y, U& grad_x, U& grad_y)
-		{
-			U h = 1.0e-6;
-			U fx = mainfunc({x, y});
-			U fxh1 = mainfunc({x + h, y});
-			U fxh2 = mainfunc({x, y + h});
-
-			grad_x = (fxh1 - fx) / h;  // Приближенная производная по x
-			grad_y = (fxh2 - fx) / h;  // Приближенная производная по y
-		}
-		U score(const std::vector<U>& v)
-		{
-			//return -exp(-((v[0]-1)*(v[0]-1) + (v[1]-1)*(v[1]-1))) - exp(-((v[0]+1)*(v[0]+1) + (v[1]+1)*(v[1]+1))); //MullerBrowns(v[0], v[1]);
-			return mainfunc({v[0], v[1]});
-		}
-		U grad(const std::vector<U> &vct, size_t n)
-		{
-			U h = 1.0e-6;
-			std::vector<U> vp = vct;
-			std::vector<U> vm = vct;
-			vp[n] += h;
-			vm[n] -= h;
-			return	(mainfunc(vp) - mainfunc(vm)) / (2*h);
-		}*/
+	
 		vect findLocalMinimum(vect x, U alpha=0.000001, int maxIterations= 100000)
 		{
 			vect grad_xyz(x.size());
@@ -158,6 +123,10 @@ namespace mep
 				result += vector1[i] * vector2[i];
 			return result;
 		}
+    U norm(const std::vector<U>& v)
+    {
+      return std::sqrt(scalar_product(v,v));
+      }
 		void initialize_line(std::vector<std::vector<U>>& str, const std::vector<U>& head, const std::vector<U>& tail)
 		{
 			std::vector<U> es(head.size());
@@ -191,6 +160,7 @@ namespace mep
 				}
 			}
 		}
+
 
 		void get_parallel(std::vector<std::vector<U>>& images, const std::vector<std::vector<U>>& str,const std::vector<std::vector<U>>& tangent, U k)
 		{
@@ -247,7 +217,7 @@ namespace mep
 				U dot = scalar_product(images[i], tangent[i]);
 				for(size_t j = 0; j < images[j].size(); j++)
 				{
-					images[i][j] = images[i][j] - dot*tangent[i][j];
+					images[i][j] = (images[i][j] - dot*tangent[i][j]);
 				}
 			}
 		}
@@ -264,7 +234,7 @@ namespace mep
 			std::vector<std::vector<U>> tangents(point_number+2, std::vector<U>(head.size()));
 			std::vector<std::vector<U>> springs(point_number+2, std::vector<U>(head.size()));
 			std::vector<std::vector<U>> gradients(point_number+2, std::vector<U>(head.size()));
-
+      
 			std::vector<U> force(point_number*head.size(), 0);
 			std::vector<U> old_force(point_number*head.size(), 0);
 			std::vector<U> velocity(point_number*head.size(), 0);
@@ -291,17 +261,21 @@ namespace mep
 					for(size_t j = 0; j < springs[i].size(); j++, l++)
 					{
 						force[l] = springs[i][j] - gradients[i][j];
+            
 					}
 				}
-
-				auto vf = scalar_product(velocity, force);
+        
+        
+        U sum = 0.0;
+        U force_norm=norm(force);
+        for(size_t i = 0; i < force.size(); i++)
+						force[i] = force[i]/force_norm;  
+				
+        auto vf = scalar_product(velocity, force);
 				if(vf > 0.0)
 				{
-					U sum = 0.0;
 					for(size_t i = 0; i < force.size(); i++)
-						sum += force[i]*force[i];
-					for(size_t i = 0; i < force.size(); i++)
-						velocity[i] = vf*force[i]/sum;
+						velocity[i] = vf*force[i];
 				}
 				else
 				{
@@ -311,9 +285,8 @@ namespace mep
 
 				for(size_t i = 0; i < velocity.size(); i++)
 				{
-					velocity[i] += step*(old_force[i] + force[i]) / 2.0;
+					velocity[i] += step*(old_force[i] + force[i]) / images[0].size();
 				}
-
 				for(size_t i = 1; i < images.size()-1; i++)
 				{
 					for(size_t j = 0; j < images[i].size(); j++)

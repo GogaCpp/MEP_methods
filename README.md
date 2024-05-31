@@ -15,7 +15,7 @@
 
 
 ```sh
-cd build
-make
-./example
+cmake -B build
+cmake --build build
+./build/example
 ```
