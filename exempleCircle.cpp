@@ -1,8 +1,10 @@
 
 #include <iostream>
 #include <fstream>
-#include "mepClass.cpp"
+
 #include <numbers>
+
+#include <mep.h>
 
 double DWcircle(const std::vector<double> arr)
 {

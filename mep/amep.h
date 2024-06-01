@@ -1,3 +1,7 @@
+#ifndef AMEP_H
+#define AMEP_H
+
+
 #include <vector>
 #include <functional>
 #include <cmath>
@@ -37,3 +41,5 @@ namespace mep
 		
 	};
 }
+
+#endif
